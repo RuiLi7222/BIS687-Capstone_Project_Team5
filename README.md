@@ -9,5 +9,5 @@
 ## Variable Importance Sample Outputs
 ![](./image/Picture3.png)
 ## Decision Rules Visualization Sample Outputs
-Visualization of the Decision Tree Model.
+Visualization of the Decision Tree Model.  
 ![](./image/Picture4.png)
