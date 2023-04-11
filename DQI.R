@@ -148,14 +148,14 @@ weights <- c(rep(1, num_names))
 
 # calculate the weighted sum of the columns
 index[is.na(index)] <- 0
-weighted_sum <- apply(index[, names], 1, function(x) weighted.mean(x, w = weights) * num_names)
+weighted_mds <- apply(index[, names], 1, function(x) weighted.mean(x, w = weights) * num_names)
 
 # add the weighted sum as a new column to the data frame
-index$weighted_sum <- weighted_sum
+index$weighted_mds <- weighted_mds
 
 
 # calculate variaty by food groups
-# 5 food groups: meat/poultry/fish/egg, dairy/beans, grains, fruits, and vegetables
+# 5 food groups: meat/poultry/fish, dairy, grains, fruits, and vegetables
 # Each food group awarded 0 or 3 pts. 3 points awarded if at least 1 item from that group was consumed
 # score range: 0-15
 
@@ -193,7 +193,7 @@ variety$vegetables_points <- ifelse(variety$cooked_vegetable_intake_f1289_0_0 > 
 variety$food_source_points <- rowSums(variety[,c('meat_poultry_fish_egg_points', 'dairy_beans_points', 'grains_points', 'fruits_points', 'vegetables_points')])
 
 # calculate variety by protein sources
-# 6 sources: meat, poultry, fish, dairy, beans, eggs(no eggs data)
+# 4 sources: meat, poultry, fish, dairy
 # 3 or more sources consumed: 5 pts, 2 sources consumed: 3 pts, 1 source consumed: 1 pts, 0 sources consumed: 0 pts
 # score range: 0-5
 
@@ -219,7 +219,7 @@ variety$protein_source_points <- ifelse(rowSums(variety[, protein_names]) >= 3, 
                                                ifelse(rowSums(variety[, protein_names]) >= 1, 1, 0)))
 
 # merge mds with variety
-DQI_score <- index$weighted_sum * 60 / max(index$weighted_sum) + variety$food_source_points * 30 / max(variety$food_source_points) + variety$protein_source_points * 10 / max(variety$protein_source_points)
+DQI_score <- index$weighted_mds * 60 / max(index$weighted_mds) + variety$food_source_points * 30 / max(variety$food_source_points) + variety$protein_source_points * 10 / max(variety$protein_source_points)
 DQI_score <- data.frame(DQI_score)
 
 # output DQI score
