@@ -1,1 +1,1 @@
-DQI_score.csv: Calculated DQI score
+DQI_score.csv: Calculated DQI score. scale: [0, 100]
