@@ -219,7 +219,7 @@ variety$protein_source_points <- ifelse(rowSums(variety[, protein_names]) >= 3, 
                                                ifelse(rowSums(variety[, protein_names]) >= 1, 1, 0)))
 
 # merge mds with variety
-DQI_score <- index$weighted_mds * 60 / max(index$weighted_mds) + variety$food_source_points * 30 / max(variety$food_source_points) + variety$protein_source_points * 10 / max(variety$protein_source_points)
+DQI_score <- index$weighted_mds * 80 / max(index$weighted_mds) + variety$food_source_points * 15 / max(variety$food_source_points) + variety$protein_source_points * 5 / max(variety$protein_source_points)
 DQI_score <- data.frame(DQI_score)
 
 # output DQI score
