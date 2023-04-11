@@ -170,7 +170,7 @@ index$weighted_mds <- weighted_mds
 variety <- diet
 variety[is.na(variety)] <- -1
 
-variety$meat_poultry_fish_egg_points <- ifelse(variety$oily_fish_intake_f1329_0_0 > 1 | 
+variety$meat_poultry_fish_points <- ifelse(variety$oily_fish_intake_f1329_0_0 > 1 | 
                                                  variety$nonoily_fish_intake_f1339_0_0 > 1 |
                                                  variety$processed_meat_intake_f1349_0_0 > 1 |
                                                  variety$poultry_intake_f1359_0_0 > 1 |
@@ -178,19 +178,19 @@ variety$meat_poultry_fish_egg_points <- ifelse(variety$oily_fish_intake_f1329_0_
                                                  variety$lambmutton_intake_f1379_0_0 > 1 |
                                                  variety$pork_intake_f1389_0_0 > 1, 3, 0)
 
-variety$dairy_beans_points <- ifelse(variety$cheese_intake_f1408_0_0 > 1 | 
+variety$dairy_points <- ifelse(variety$cheese_intake_f1408_0_0 > 1 | 
                                        variety$milk_type_used_f1418_0_0 >= 1, 3, 0)
 
-variety$grains_points <- ifelse(variety$bread_intake_f1438_0_0 > 1 | 
-                                  variety$cereal_intake_f1458_0_0 > 1, 3, 0)
+variety$grains_points <- ifelse(variety$bread_intake_f1438_0_0 >= 1 | 
+                                  variety$cereal_intake_f1458_0_0 >= 1, 3, 0)
 
-variety$fruits_points <- ifelse(variety$fresh_fruit_intake_f1309_0_0 > 1 | 
-                                  variety$dried_fruit_intake_f1319_0_0 > 1, 3, 0)
+variety$fruits_points <- ifelse(variety$fresh_fruit_intake_f1309_0_0 >= 1 | 
+                                  variety$dried_fruit_intake_f1319_0_0 >= 1, 3, 0)
 
-variety$vegetables_points <- ifelse(variety$cooked_vegetable_intake_f1289_0_0 > 1 | 
-                                      variety$salad_raw_vegetable_intake_f1299_0_0 > 1, 3, 0)
+variety$vegetables_points <- ifelse(variety$cooked_vegetable_intake_f1289_0_0 >= 1 | 
+                                      variety$salad_raw_vegetable_intake_f1299_0_0 >= 1, 3, 0)
 
-variety$food_source_points <- rowSums(variety[,c('meat_poultry_fish_egg_points', 'dairy_beans_points', 'grains_points', 'fruits_points', 'vegetables_points')])
+variety$food_source_points <- rowSums(variety[,c('meat_poultry_fish_points', 'dairy_points', 'grains_points', 'fruits_points', 'vegetables_points')])
 
 # calculate variety by protein sources
 # 4 sources: meat, poultry, fish, dairy
