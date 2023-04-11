@@ -1,11 +1,15 @@
+# setwd("/Users/jgloriouswu/Desktop/BIS687/final-project/")
+setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
+
 # import diet data
-df <- read.csv("/Users/jgloriouswu/Desktop/BIS687/final-project/diet.csv")
+df <- read.csv("diet.csv")
+ukbiobank <- readRDS("ukbiobank.rds")
 diet <- ukbiobank[,c("age_at_recruitment_f21022_0_0","sex_f31_0_0",names(df)[3:34])]
 
 # select older patients (age>65)
 diet <- subset(diet, age_at_recruitment_f21022_0_0>65)
 
-# library(dplyr)
+library(dplyr)
 # factor to text
 diet <- as.data.frame(apply(diet, 2, as.character))
 
@@ -110,7 +114,7 @@ for (i in 1:nrow(index)){
 index$MDS <- rowSums(index[,3:19], na.rm = TRUE)
 
 # output df: index(11270 patients)
-write.csv(index, "/Users/jgloriouswu/Desktop/BIS687/final-project/MDS.csv")
+write.csv(index, "MDS_index.csv")
 
 # column `variation_in_diet_f1548_0_0` not used to calculate MDS,
 # just put here for reference.
@@ -119,3 +123,104 @@ write.csv(index, "/Users/jgloriouswu/Desktop/BIS687/final-project/MDS.csv")
 
 
 
+
+
+# set variable weight
+names <- c("cooked_vegetable_intake_f1289_0_0",
+           "salad_raw_vegetable_intake_f1299_0_0",
+           "fresh_fruit_intake_f1309_0_0",
+           "dried_fruit_intake_f1319_0_0",        
+           "oily_fish_intake_f1329_0_0",
+           "nonoily_fish_intake_f1339_0_0",      
+           "processed_meat_intake_f1349_0_0",
+           "poultry_intake_f1359_0_0",     
+           "beef_intake_f1369_0_0",
+           "lambmutton_intake_f1379_0_0",      
+           "pork_intake_f1389_0_0",
+           "cheese_intake_f1408_0_0",
+           "milk_type_used_f1418_0_0",
+           "bread_intake_f1438_0_0",
+           "cereal_intake_f1458_0_0",
+           "tea_intake_f1488_0_0",
+           "water_intake_f1528_0_0")
+num_names <- length(names)
+weights <- c(rep(1, num_names))
+
+# calculate the weighted sum of the columns
+index[is.na(index)] <- 0
+weighted_sum <- apply(index[, names], 1, function(x) weighted.mean(x, w = weights) * num_names)
+
+# add the weighted sum as a new column to the data frame
+index$weighted_sum <- weighted_sum
+
+
+# calculate variaty by food groups
+# 5 food groups: meat/poultry/fish/egg, dairy/beans, grains, fruits, and vegetables
+# Each food group awarded 0 or 3 pts. 3 points awarded if at least 1 item from that group was consumed
+# score range: 0-15
+
+#Variables for 5 food groups:
+#Meat/Poultry/Fish/Egg: oily_fish_intake_f1329_0_0, nonoily_fish_intake_f1339_0_0, processed_meat_intake_f1349_0_0, 
+#                       poultry_intake_f1359_0_0, beef_intake_f1369_0_0, lambmutton_intake_f1379_0_0, pork_intake_f1389_0_0
+#Dairy/Beans: cheese_intake_f1408_0_0, milk_type_used_f1418_0_0
+#Grains: bread_intake_f1438_0_0, cereal_intake_f1458_0_0
+#Fruits: fresh_fruit_intake_f1309_0_0, dried_fruit_intake_f1319_0_0
+#Vegetables: cooked_vegetable_intake_f1289_0_0, salad_raw_vegetable_intake_f1299_0_0
+
+variety <- diet
+variety[is.na(variety)] <- -1
+
+variety$meat_poultry_fish_egg_points <- ifelse(variety$oily_fish_intake_f1329_0_0 > 1 | 
+                                                 variety$nonoily_fish_intake_f1339_0_0 > 1 |
+                                                 variety$processed_meat_intake_f1349_0_0 > 1 |
+                                                 variety$poultry_intake_f1359_0_0 > 1 |
+                                                 variety$beef_intake_f1369_0_0 > 1 |
+                                                 variety$lambmutton_intake_f1379_0_0 > 1 |
+                                                 variety$pork_intake_f1389_0_0 > 1, 3, 0)
+
+variety$dairy_beans_points <- ifelse(variety$cheese_intake_f1408_0_0 > 1 | 
+                                       variety$milk_type_used_f1418_0_0 >= 1, 3, 0)
+
+variety$grains_points <- ifelse(variety$bread_intake_f1438_0_0 > 1 | 
+                                  variety$cereal_intake_f1458_0_0 > 1, 3, 0)
+
+variety$fruits_points <- ifelse(variety$fresh_fruit_intake_f1309_0_0 > 1 | 
+                                  variety$dried_fruit_intake_f1319_0_0 > 1, 3, 0)
+
+variety$vegetables_points <- ifelse(variety$cooked_vegetable_intake_f1289_0_0 > 1 | 
+                                      variety$salad_raw_vegetable_intake_f1299_0_0 > 1, 3, 0)
+
+variety$food_source_points <- rowSums(variety[,c('meat_poultry_fish_egg_points', 'dairy_beans_points', 'grains_points', 'fruits_points', 'vegetables_points')])
+
+# calculate variety by protein sources
+# 6 sources: meat, poultry, fish, dairy, beans, eggs(no eggs data)
+# 3 or more sources consumed: 5 pts, 2 sources consumed: 3 pts, 1 source consumed: 1 pts, 0 sources consumed: 0 pts
+# score range: 0-5
+
+
+# Create a new column for meat/poultry/fish/egg points
+variety$meat_intake <- ifelse(variety$processed_meat_intake_f1349_0_0 > 1 |
+                                variety$beef_intake_f1369_0_0 > 1 |
+                                variety$lambmutton_intake_f1379_0_0 > 1 |
+                                variety$pork_intake_f1389_0_0 > 1, 1, 0)
+
+variety$poultry_intake <- ifelse(variety$poultry_intake_f1359_0_0 > 1, 1, 0)
+
+variety$fish_intake <- ifelse(variety$oily_fish_intake_f1329_0_0 > 1 | 
+                                variety$nonoily_fish_intake_f1339_0_0 > 1 , 1, 0)
+
+variety$dairy_intake <- ifelse(variety$cheese_intake_f1408_0_0 > 1 | 
+                                 variety$milk_type_used_f1418_0_0 >= 1, 1, 0)
+
+protein_names <- c('meat_intake', 'poultry_intake', 'fish_intake', 'dairy_intake')
+
+variety$protein_source_points <- ifelse(rowSums(variety[, protein_names]) >= 3, 5,
+                                        ifelse(rowSums(variety[, protein_names]) >= 2, 3,
+                                               ifelse(rowSums(variety[, protein_names]) >= 1, 1, 0)))
+
+# merge mds with variety
+DQI_score <- index$weighted_sum * 60 / max(index$weighted_sum) + variety$food_source_points * 30 / max(variety$food_source_points) + variety$protein_source_points * 10 / max(variety$protein_source_points)
+
+
+# output DQI score
+write.csv(index, "MDS_index.csv")
