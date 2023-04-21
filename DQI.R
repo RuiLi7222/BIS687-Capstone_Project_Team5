@@ -1,17 +1,14 @@
-# setwd("/Users/jgloriouswu/Desktop/BIS687/final-project/")
-setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
-
 # import diet data
-df <- read.csv("diet.csv")
-ukbiobank <- readRDS("ukbiobank.rds")
-diet <- ukbiobank[,c("age_at_recruitment_f21022_0_0","sex_f31_0_0",names(df)[3:34])]
-
+df <- read.csv("/Users/jgloriouswu/Desktop/BIS687/final-project/diet.csv")
+df <- df[,-1]
+# diet <- ukbiobank[,c("eid","age_at_recruitment_f21022_0_0","sex_f31_0_0",names(df)[3:34])]
+diet <- df[,c(1,3,4:35)]
 # select older patients (age>65)
-diet <- subset(diet, age_at_recruitment_f21022_0_0>65)
+# diet <- subset(diet, age_at_recruitment_f21022_0_0>65)
 
-library(dplyr)
+# library(dplyr)
 # factor to text
-diet <- as.data.frame(apply(diet, 2, as.character))
+# diet <- as.data.frame(apply(diet, 2, as.character))
 
 # remove useless columns
 # remove several last data (other text + pilot data)
@@ -113,14 +110,12 @@ for (i in 1:nrow(index)){
 # create column MDS
 index$MDS <- rowSums(index[,3:19], na.rm = TRUE)
 
-# output df: index(11270 patients)
-write.csv(index, "MDS_index.csv")
 
 # column `variation_in_diet_f1548_0_0` not used to calculate MDS,
 # just put here for reference.
 
-
-
+# output df: index(11270 patients)
+write.csv(index, "/Users/jgloriouswu/Desktop/BIS687/final-project/MDS_index.csv")
 
 
 
@@ -171,15 +166,15 @@ variety <- diet
 variety[is.na(variety)] <- -1
 
 variety$meat_poultry_fish_points <- ifelse(variety$oily_fish_intake_f1329_0_0 > 1 | 
-                                                 variety$nonoily_fish_intake_f1339_0_0 > 1 |
-                                                 variety$processed_meat_intake_f1349_0_0 > 1 |
-                                                 variety$poultry_intake_f1359_0_0 > 1 |
-                                                 variety$beef_intake_f1369_0_0 > 1 |
-                                                 variety$lambmutton_intake_f1379_0_0 > 1 |
-                                                 variety$pork_intake_f1389_0_0 > 1, 3, 0)
+                                             variety$nonoily_fish_intake_f1339_0_0 > 1 |
+                                             variety$processed_meat_intake_f1349_0_0 > 1 |
+                                             variety$poultry_intake_f1359_0_0 > 1 |
+                                             variety$beef_intake_f1369_0_0 > 1 |
+                                             variety$lambmutton_intake_f1379_0_0 > 1 |
+                                             variety$pork_intake_f1389_0_0 > 1, 3, 0)
 
 variety$dairy_points <- ifelse(variety$cheese_intake_f1408_0_0 > 1 | 
-                                       variety$milk_type_used_f1418_0_0 >= 1, 3, 0)
+                                 variety$milk_type_used_f1418_0_0 >= 1, 3, 0)
 
 variety$grains_points <- ifelse(variety$bread_intake_f1438_0_0 >= 1 | 
                                   variety$cereal_intake_f1458_0_0 >= 1, 3, 0)
@@ -222,5 +217,6 @@ variety$protein_source_points <- ifelse(rowSums(variety[, protein_names]) >= 3, 
 DQI_score <- index$weighted_mds * 80 / max(index$weighted_mds) + variety$food_source_points * 15 / max(variety$food_source_points) + variety$protein_source_points * 5 / max(variety$protein_source_points)
 DQI_score <- data.frame(DQI_score)
 
-# output DQI score
-write.csv(DQI_score, "DQI_score.csv")
+
+
+
