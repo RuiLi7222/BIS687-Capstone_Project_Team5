@@ -1,12 +1,14 @@
+setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
+
 # import diet data
-df <- read.csv("/Users/jgloriouswu/Desktop/BIS687/final-project/diet.csv")
+df <- read.csv("diet.csv")
 df <- df[,-1]
 # diet <- ukbiobank[,c("eid","age_at_recruitment_f21022_0_0","sex_f31_0_0",names(df)[3:34])]
 diet <- df[,c(1,3,4:35)]
 # select older patients (age>65)
 # diet <- subset(diet, age_at_recruitment_f21022_0_0>65)
 
-# library(dplyr)
+library(dplyr)
 # factor to text
 # diet <- as.data.frame(apply(diet, 2, as.character))
 
@@ -68,7 +70,7 @@ diet[,3:19] <- lapply(diet[,3:19], as.numeric)
 for (j in 3:19){
   for (i in 1:nrow(diet)){
     diet[i,j] <- ifelse(diet[i,j]<0, NA, diet[i,j])
-    }
+  }
 }
 
 # Count NA for each column
@@ -115,7 +117,7 @@ index$MDS <- rowSums(index[,3:19], na.rm = TRUE)
 # just put here for reference.
 
 # output df: index(11270 patients)
-write.csv(index, "/Users/jgloriouswu/Desktop/BIS687/final-project/MDS_index.csv")
+write.csv(index, "MDS_index.csv")
 
 
 
@@ -214,9 +216,9 @@ variety$protein_source_points <- ifelse(rowSums(variety[, protein_names]) >= 3, 
                                                ifelse(rowSums(variety[, protein_names]) >= 1, 1, 0)))
 
 # merge mds with variety
-DQI_score <- index$weighted_mds * 80 / max(index$weighted_mds) + variety$food_source_points * 15 / max(variety$food_source_points) + variety$protein_source_points * 5 / max(variety$protein_source_points)
-DQI_score <- data.frame(DQI_score)
+joined_df <- merge(index, variety, by = "eid")
+joined_df$DQI_score <- joined_df$weighted_mds * 80 / max(joined_df$weighted_mds) + joined_df$food_source_points * 15 / max(joined_df$food_source_points) + joined_df$protein_source_points * 5 / max(joined_df$protein_source_points)
+joined_df <- joined_df[,c("eid", "DQI_score")]
 
 
-
-
+write.csv(joined_df, "DQI_score.csv")
