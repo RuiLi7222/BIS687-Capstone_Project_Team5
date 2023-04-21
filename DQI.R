@@ -71,7 +71,7 @@ diet[,3:19] <- lapply(diet[,3:19], as.numeric)
 for (j in 3:19){
   for (i in 1:nrow(diet)){
     diet[i,j] <- ifelse(diet[i,j]<0, NA, diet[i,j])
-    }
+  }
 }
 
 # Count NA for each column
@@ -148,14 +148,14 @@ weights <- c(rep(1, num_names))
 
 # calculate the weighted sum of the columns
 index[is.na(index)] <- 0
-weighted_mds <- apply(index[, names], 1, function(x) weighted.mean(x, w = weights) * num_names)
+weighted_sum <- apply(index[, names], 1, function(x) weighted.mean(x, w = weights) * num_names)
 
 # add the weighted sum as a new column to the data frame
-index$weighted_mds <- weighted_mds
+index$weighted_sum <- weighted_sum
 
 
 # calculate variaty by food groups
-# 5 food groups: meat/poultry/fish, dairy, grains, fruits, and vegetables
+# 5 food groups: meat/poultry/fish/egg, dairy/beans, grains, fruits, and vegetables
 # Each food group awarded 0 or 3 pts. 3 points awarded if at least 1 item from that group was consumed
 # score range: 0-15
 
@@ -170,7 +170,7 @@ index$weighted_mds <- weighted_mds
 variety <- diet
 variety[is.na(variety)] <- -1
 
-variety$meat_poultry_fish_points <- ifelse(variety$oily_fish_intake_f1329_0_0 > 1 | 
+variety$meat_poultry_fish_egg_points <- ifelse(variety$oily_fish_intake_f1329_0_0 > 1 | 
                                                  variety$nonoily_fish_intake_f1339_0_0 > 1 |
                                                  variety$processed_meat_intake_f1349_0_0 > 1 |
                                                  variety$poultry_intake_f1359_0_0 > 1 |
@@ -178,22 +178,22 @@ variety$meat_poultry_fish_points <- ifelse(variety$oily_fish_intake_f1329_0_0 > 
                                                  variety$lambmutton_intake_f1379_0_0 > 1 |
                                                  variety$pork_intake_f1389_0_0 > 1, 3, 0)
 
-variety$dairy_points <- ifelse(variety$cheese_intake_f1408_0_0 > 1 | 
+variety$dairy_beans_points <- ifelse(variety$cheese_intake_f1408_0_0 > 1 | 
                                        variety$milk_type_used_f1418_0_0 >= 1, 3, 0)
 
-variety$grains_points <- ifelse(variety$bread_intake_f1438_0_0 >= 1 | 
-                                  variety$cereal_intake_f1458_0_0 >= 1, 3, 0)
+variety$grains_points <- ifelse(variety$bread_intake_f1438_0_0 > 1 | 
+                                  variety$cereal_intake_f1458_0_0 > 1, 3, 0)
 
-variety$fruits_points <- ifelse(variety$fresh_fruit_intake_f1309_0_0 >= 1 | 
-                                  variety$dried_fruit_intake_f1319_0_0 >= 1, 3, 0)
+variety$fruits_points <- ifelse(variety$fresh_fruit_intake_f1309_0_0 > 1 | 
+                                  variety$dried_fruit_intake_f1319_0_0 > 1, 3, 0)
 
-variety$vegetables_points <- ifelse(variety$cooked_vegetable_intake_f1289_0_0 >= 1 | 
-                                      variety$salad_raw_vegetable_intake_f1299_0_0 >= 1, 3, 0)
+variety$vegetables_points <- ifelse(variety$cooked_vegetable_intake_f1289_0_0 > 1 | 
+                                      variety$salad_raw_vegetable_intake_f1299_0_0 > 1, 3, 0)
 
-variety$food_source_points <- rowSums(variety[,c('meat_poultry_fish_points', 'dairy_points', 'grains_points', 'fruits_points', 'vegetables_points')])
+variety$food_source_points <- rowSums(variety[,c('meat_poultry_fish_egg_points', 'dairy_beans_points', 'grains_points', 'fruits_points', 'vegetables_points')])
 
 # calculate variety by protein sources
-# 4 sources: meat, poultry, fish, dairy
+# 6 sources: meat, poultry, fish, dairy, beans, eggs(no eggs data)
 # 3 or more sources consumed: 5 pts, 2 sources consumed: 3 pts, 1 source consumed: 1 pts, 0 sources consumed: 0 pts
 # score range: 0-5
 
@@ -219,8 +219,8 @@ variety$protein_source_points <- ifelse(rowSums(variety[, protein_names]) >= 3, 
                                                ifelse(rowSums(variety[, protein_names]) >= 1, 1, 0)))
 
 # merge mds with variety
-DQI_score <- index$weighted_mds * 80 / max(index$weighted_mds) + variety$food_source_points * 15 / max(variety$food_source_points) + variety$protein_source_points * 5 / max(variety$protein_source_points)
-DQI_score <- data.frame(DQI_score)
+DQI_score <- index$weighted_sum * 60 / max(index$weighted_sum) + variety$food_source_points * 30 / max(variety$food_source_points) + variety$protein_source_points * 10 / max(variety$protein_source_points)
+
 
 # output DQI score
-write.csv(DQI_score, "DQI_score.csv")
+write.csv(index, "MDS_index.csv")
