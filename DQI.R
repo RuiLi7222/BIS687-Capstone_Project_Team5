@@ -3,10 +3,7 @@ setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Pr
 # import diet data
 df <- read.csv("diet.csv")
 df <- df[,-1]
-# diet <- ukbiobank[,c("eid","age_at_recruitment_f21022_0_0","sex_f31_0_0",names(df)[3:34])]
 diet <- df[,c(1,3,4:35)]
-# select older patients (age>65)
-# diet <- subset(diet, age_at_recruitment_f21022_0_0>65)
 
 library(dplyr)
 # factor to text
