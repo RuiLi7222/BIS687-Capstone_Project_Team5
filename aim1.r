@@ -1,20 +1,29 @@
-setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
+# setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
 
 #----------------- Descriptive Statistics -------------------#
 # import diet data
-physical <- read.csv("physical.csv")
+physical <- read.csv("final-project/physical.csv")
 physical <- physical[, -1]
-ukbiobank <- readRDS("ukbiobank.rds")
-DQI_score <- read.csv("DQI_score.csv")
-DQI_score <- DQI_score[, -1]
+physical <- physical %>% mutate(across(everything(), ~ifelse(.<0,NA,.)))
+physical <- physical %>% 
+  rowwise() %>% 
+  mutate(screen_time = sum(time_spent_watching_television_tv_f1070_0_0,
+                           time_spent_using_computer_f1080_0_0,
+                           na.rm=TRUE))
+physical$screen_time <- ifelse(physical$screen_time>=4,1,0)
+
+ukbiobank <- readRDS("final-project/ukbiobank.rds")
+DQI_score <- read.csv("final-project/DQI_score.csv",skip = 1)
+DQI_score <- DQI_score[1:11270,-1]
 age <- ukbiobank[, c("eid", "age_at_recruitment_f21022_0_0")]
 
 df <- merge(physical, age, by = "eid")
 df <- merge(df, DQI_score, by = "eid")
 df$total_screen_hours_per_day <- df$time_spent_watching_television_tv_f1070_0_0 + df$time_spent_using_computer_f1080_0_0
 library(dplyr)
-df <- df %>% mutate(across(everything(), ~ ifelse(. < 0, 0, .)))
+# df <- df %>% mutate(across(everything(), ~ ifelse(. < 0, 0, .)))
 df <- na.omit(df)
+df$DQI_score <- as.numeric(df$DQI_score)
 
 library(psych)
 # subset the data by screen_time
@@ -23,15 +32,15 @@ screen1 <- subset(df, screen_time == 1)
 
 # calculate descriptive statistics for screen_time=0
 screen_time_0_desc <- describe(screen0[c("age_at_recruitment_f21022_0_0",
-                                               "total_met_minites_per_day",
-                                               "DQI_score",
-                                               "total_screen_hours_per_day")])
+                                         "total_met_minites_per_day",
+                                         "DQI_score",
+                                         "total_screen_hours_per_day")])
 
 # calculate descriptive statistics for screen_time=1
 screen_time_1_desc <- describe(screen1[c("age_at_recruitment_f21022_0_0",
-                                               "total_met_minites_per_day",
-                                               "DQI_score",
-                                               "total_screen_hours_per_day")])
+                                         "total_met_minites_per_day",
+                                         "DQI_score",
+                                         "total_screen_hours_per_day")])
 
 
 # calculate percentage of females in each group
@@ -109,5 +118,4 @@ sink()
 # cat("Result for ipaq_activity_group_f22032_0_0: high\n")
 # summary(model3)
 # sink()
-
 
