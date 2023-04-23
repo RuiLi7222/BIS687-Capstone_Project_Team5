@@ -22,13 +22,13 @@ screen0 <- subset(df, screen_time == 0)
 screen1 <- subset(df, screen_time == 1)
 
 # calculate descriptive statistics for screen_time=0
-screen_time_0_desc <- describe(screen_time_0[c("age_at_recruitment_f21022_0_0",
+screen_time_0_desc <- describe(screen0[c("age_at_recruitment_f21022_0_0",
                                                "total_met_minites_per_day",
                                                "DQI_score",
                                                "total_screen_hours_per_day")])
 
 # calculate descriptive statistics for screen_time=1
-screen_time_1_desc <- describe(screen_time_1[c("age_at_recruitment_f21022_0_0",
+screen_time_1_desc <- describe(screen1[c("age_at_recruitment_f21022_0_0",
                                                "total_met_minites_per_day",
                                                "DQI_score",
                                                "total_screen_hours_per_day")])
