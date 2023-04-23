@@ -14,9 +14,8 @@ df <- merge(df, DQI_score, by = "eid")
 df$total_screen_hours_per_day <- df$time_spent_watching_television_tv_f1070_0_0 + df$time_spent_using_computer_f1080_0_0
 library(dplyr)
 df <- df %>% mutate(across(everything(), ~ ifelse(. < 0, 0, .)))
-# write.csv(df, "df.csv")
 df <- na.omit(df)
-# names(df)
+# write.csv(df, "df.csv")
 
 library(psych)
 # subset the data by screen_time
