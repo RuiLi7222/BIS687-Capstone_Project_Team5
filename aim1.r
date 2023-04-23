@@ -87,7 +87,7 @@ model <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_
 
 # display the regression 
 cat("\n\n#----------------- Linear Regression -------------------#\n\n")
-cat("\n\n Analysis Results\n")
+cat("Analysis Results\n")
 summary(model)
 sink()
 
