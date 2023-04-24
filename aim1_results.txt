@@ -4,36 +4,36 @@
 
 Group 0: screen time < 4hr per day 
 Group 1: screen time > 4hr per day 
-                               group1    n
-age_at_recruitment_f21022_0_01      0 2508
-age_at_recruitment_f21022_0_02      1 4819
-total_met_minites_per_day1          0 2508
-total_met_minites_per_day2          1 4819
-DQI_score1                          0 2508
-DQI_score2                          1 4819
-total_screen_hours_per_day1         0 2508
-total_screen_hours_per_day2         1 4819
-                                 mean     sd
-age_at_recruitment_f21022_0_01  67.41   1.19
-age_at_recruitment_f21022_0_02  67.41   1.20
-total_met_minites_per_day1     445.14 392.50
-total_met_minites_per_day2     379.45 355.80
-DQI_score1                      76.69  11.55
-DQI_score2                      76.08  10.97
-total_screen_hours_per_day1      2.49   0.69
-total_screen_hours_per_day2      5.42   1.60
-Group 0: Percentage of females:  49.52 % 
-Group 1: Percentage of females:  39.26 % 
+                               group1    n   mean
+age_at_recruitment_f21022_0_01      0 3943  67.40
+age_at_recruitment_f21022_0_02      1 5331  67.41
+total_met_minites_per_day1          0 3943 434.72
+total_met_minites_per_day2          1 5331 379.39
+DQI_score1                          0 3943  76.79
+DQI_score2                          1 5331  76.05
+total_screen_hours_per_day1         0 3943   2.25
+total_screen_hours_per_day2         1 5331   5.35
+                                   sd
+age_at_recruitment_f21022_0_01   1.19
+age_at_recruitment_f21022_0_02   1.20
+total_met_minites_per_day1     380.56
+total_met_minites_per_day2     354.66
+DQI_score1                      11.55
+DQI_score2                      11.00
+total_screen_hours_per_day1      0.88
+total_screen_hours_per_day2      1.57
+Group 0: Percentage of females:  52.55 % 
+Group 1: Percentage of females:  40.41 % 
 
 
 #----------------- Hypothesis Testing -------------------#
 
-Mean DQI score for screen_time = 0: 76.68733 
-Mean DQI score for screen_time = 1: 76.07567 
+Mean DQI score for screen_time = 0: 76.79413 
+Mean DQI score for screen_time = 1: 76.05101 
 
-              Df Sum Sq Mean Sq F value Pr(>F)  
-screen_time    1    617   617.1   4.949 0.0261 *
-Residuals   7325 913454   124.7                 
+              Df  Sum Sq Mean Sq F value  Pr(>F)   
+screen_time    1    1252  1251.6   9.911 0.00165 **
+Residuals   9272 1170910   126.3                   
 ---
 Signif. codes:  
 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
@@ -49,32 +49,26 @@ lm(formula = DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--48.435  -6.763   0.855   8.380  24.945 
+-49.353  -6.779   0.788   8.528  24.972 
 
 Coefficients:
-                                Estimate
-(Intercept)                   62.4404427
-screen_time                   -0.4402036
-sex_f31_0_0Male                0.0609312
-age_at_recruitment_f21022_0_0  0.1930142
-total_met_minites_per_day      0.0027068
-                              Std. Error t value
-(Intercept)                    7.3355559   8.512
-screen_time                    0.2761892  -1.594
-sex_f31_0_0Male                0.2639389   0.231
-age_at_recruitment_f21022_0_0  0.1087298   1.775
-total_met_minites_per_day      0.0003524   7.680
-                              Pr(>|t|)    
-(Intercept)                    < 2e-16 ***
-screen_time                     0.1110    
-sex_f31_0_0Male                 0.8174    
-age_at_recruitment_f21022_0_0   0.0759 .  
-total_met_minites_per_day     1.79e-14 ***
+                                Estimate Std. Error
+(Intercept)                   63.3172648  6.5728348
+screen_time                   -0.5970108  0.2375024
+sex_f31_0_01                   0.0414609  0.2351129
+age_at_recruitment_f21022_0_0  0.1818256  0.0974460
+total_met_minites_per_day      0.0027647  0.0003177
+                              t value Pr(>|t|)    
+(Intercept)                     9.633   <2e-16 ***
+screen_time                    -2.514   0.0120 *  
+sex_f31_0_01                    0.176   0.8600    
+age_at_recruitment_f21022_0_0   1.866   0.0621 .  
+total_met_minites_per_day       8.702   <2e-16 ***
 ---
 Signif. codes:  
 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 11.12 on 7322 degrees of freedom
-Multiple R-squared:  0.009117,	Adjusted R-squared:  0.008575 
-F-statistic: 16.84 on 4 and 7322 DF,  p-value: 9.433e-14
+Residual standard error: 11.19 on 9269 degrees of freedom
+Multiple R-squared:  0.009543,	Adjusted R-squared:  0.009116 
+F-statistic: 22.33 on 4 and 9269 DF,  p-value: < 2.2e-16
 

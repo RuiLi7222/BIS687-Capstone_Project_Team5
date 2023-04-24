@@ -1,29 +1,31 @@
 # setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
-
+library(dplyr)
 #----------------- Descriptive Statistics -------------------#
 # import diet data
-physical <- read.csv("final-project/physical.csv")
+physical <- read.csv("physical.csv")
 physical <- physical[, -1]
-physical <- physical %>% mutate(across(everything(), ~ifelse(.<0,NA,.)))
 physical <- physical %>% 
-  rowwise() %>% 
-  mutate(screen_time = sum(time_spent_watching_television_tv_f1070_0_0,
-                           time_spent_using_computer_f1080_0_0,
-                           na.rm=TRUE))
-physical$screen_time <- ifelse(physical$screen_time>=4,1,0)
+  mutate(across(everything(), ~ifelse(.<0, 0, .)))
+physical$screen_time <- physical$time_spent_using_computer_f1080_0_0 + physical$time_spent_watching_television_tv_f1070_0_0
+physical$screen_time <- ifelse(physical$screen_time>=4, 1, 0)
 
-ukbiobank <- readRDS("final-project/ukbiobank.rds")
-DQI_score <- read.csv("final-project/DQI_score.csv",skip = 1)
+ukbiobank <- readRDS("ukbiobank.rds")
+DQI_score <- read.csv("DQI_score.csv",skip = 1)
 DQI_score <- DQI_score[1:11270,-1]
 age <- ukbiobank[, c("eid", "age_at_recruitment_f21022_0_0")]
 
 df <- merge(physical, age, by = "eid")
 df <- merge(df, DQI_score, by = "eid")
 df$total_screen_hours_per_day <- df$time_spent_watching_television_tv_f1070_0_0 + df$time_spent_using_computer_f1080_0_0
-library(dplyr)
 # df <- df %>% mutate(across(everything(), ~ ifelse(. < 0, 0, .)))
-df <- na.omit(df)
 df$DQI_score <- as.numeric(df$DQI_score)
+df$ipaq_activity_group_f22032_0_0 <- factor(df$ipaq_activity_group_f22032_0_0,
+                                            levels = c("low","moderate","high"),
+                                            labels = c(1,2,3))
+df$sex_f31_0_0 <- factor(df$sex_f31_0_0,
+                         levels = c("Female", "Male"),
+                         labels = c(0,1))
+df <- na.omit(df)
 
 library(psych)
 # subset the data by screen_time
@@ -44,8 +46,8 @@ screen_time_1_desc <- describe(screen1[c("age_at_recruitment_f21022_0_0",
 
 
 # calculate percentage of females in each group
-percent_female_0 <- round(prop.table(table(screen0$sex_f31_0_0))["Female"] * 100, 2)
-percent_female_1 <- round(prop.table(table(screen1$sex_f31_0_0))["Female"] * 100, 2)
+percent_female_0 <- round(prop.table(table(screen0$sex_f31_0_0))["0"] * 100, 2)
+percent_female_1 <- round(prop.table(table(screen1$sex_f31_0_0))["0"] * 100, 2)
 
 
 
@@ -90,9 +92,10 @@ summary(fit)
 
 #----------------- Linear Regression -------------------#
 # fit a multivariable linear regression model
-# model <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
+# model <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 +
 #               ipaq_activity_group_f22032_0_0 + total_met_minites_per_day, data = df)
-model <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + total_met_minites_per_day, data = df)
+model <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
+              total_met_minites_per_day, data = df)
 
 # display the regression 
 cat("\n\n#----------------- Linear Regression -------------------#\n\n")
@@ -118,4 +121,74 @@ sink()
 # cat("Result for ipaq_activity_group_f22032_0_0: high\n")
 # summary(model3)
 # sink()
+
+
+
+############## Mediation Analysis #############
+#Mediate package
+library(mediation)
+fitM <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0, 
+           data = df)
+fitY <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
+             total_met_minites_per_day, data = df)
+
+anova(fitM, fitY)
+
+# Estimation via quasi-Bayesian approximation
+contcont <- mediate(fitM, fitY, sims=50, 
+                    treat="screen_time", 
+                    mediator="total_met_minites_per_day")
+summary(contcont)
+plot(contcont)
+
+# Estimation via nonparametric bootstrap
+contcont.boot <- mediate(fitM, fitY, boot=TRUE, sims=50, 
+                         treat="screen_time", 
+                         mediator="total_met_minites_per_day")
+summary(contcont.boot)
+
+# Allowing treatment-mediator interaction
+fitD <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
+             total_met_minites_per_day + screen_time:total_screen_hours_per_day, 
+           data=df)
+anova(fitY, fitD)
+
+contcont.int <- mediate(fitM, fitD, sims=50, 
+                        treat="screen_time", 
+                        mediator="total_met_minites_per_day")
+summary(contcont.int)
+
+# Allowing ``moderated mediation'' with respect to sex
+b.int <- lm(DQI_score ~ screen_time*sex_f31_0_0 + age_at_recruitment_f21022_0_0,
+            data = df)
+d.int <- lm(DQI_score ~ screen_time*sex_f31_0_0*total_met_minites_per_day + 
+              age_at_recruitment_f21022_0_0,
+            data = df)
+anova(fitM, b.int)
+contcont.female <- mediate(b.int, d.int, sims=50, 
+                           treat="screen_time", 
+                           mediator="total_met_minites_per_day",
+                           covariates = list(sex_f31_0_0 = 0))
+contcont.male <- mediate(b.int, d.int, sims=50, 
+                         treat="screen_time", 
+                         mediator="total_met_minites_per_day",
+                         covariates = list(sex_f31_0_0 = 1))
+summary(contcont.female)
+summary(contcont.male)
+
+
+
+# # compare two categories of treatment --- 0 and 1
+# model.cat <- mediate(fitM, fitY, 
+#                      treat="screen_time", 
+#                      mediator="total_met_minites_per_day", 
+#                      sims=50, 
+#                      control.value = 0, treat.value = 1)
+# summary(model.cat)
+
+
+
+
+
+
 
