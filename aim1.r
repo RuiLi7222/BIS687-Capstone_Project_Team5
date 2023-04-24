@@ -1,6 +1,5 @@
 # setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
 library(dplyr)
-#----------------- Descriptive Statistics -------------------#
 # import diet data
 physical <- read.csv("physical.csv")
 physical <- physical[, -1]
@@ -10,8 +9,8 @@ physical$screen_time <- physical$time_spent_using_computer_f1080_0_0 + physical$
 physical$screen_time <- ifelse(physical$screen_time>=4, 1, 0)
 
 ukbiobank <- readRDS("ukbiobank.rds")
-DQI_score <- read.csv("DQI_score.csv",skip = 1)
-DQI_score <- DQI_score[1:11270,-1]
+DQI_score <- read.csv("DQI_score.csv")
+DQI_score <- DQI_score[,-1]
 age <- ukbiobank[, c("eid", "age_at_recruitment_f21022_0_0")]
 
 df <- merge(physical, age, by = "eid")
@@ -27,6 +26,8 @@ df$sex_f31_0_0 <- factor(df$sex_f31_0_0,
                          labels = c(0,1))
 df <- na.omit(df)
 
+#----------------- Descriptive Statistics -------------------#
+cat("\n\n#----------------- Descriptive Statistics -------------------#\n\n")
 library(psych)
 # subset the data by screen_time
 screen0 <- subset(df, screen_time == 0)
@@ -65,7 +66,6 @@ screen_time_desc <- describeBy(df[c("age_at_recruitment_f21022_0_0",
 
 # print the table and percentage of females
 sink("aim1_results.txt")
-cat("\n\n#----------------- Descriptive Statistics -------------------#\n\n")
 cat("Group 0: screen time < 4hr per day \n")
 cat("Group 1: screen time > 4hr per day \n")
 screen_time_desc[, c(2, 4, 5, 6)] # display only mean and sd columns
@@ -75,25 +75,40 @@ cat("Group 1: Percentage of females: ", percent_female_1, "% \n")
 
 
 #----------------- Hypothesis Testing -------------------#
+cat("\n\n#----------------- Hypothesis Testing -------------------#\n\n")
+
+cat("\n\n#------------ Any DQI_score differences between screen_time=0,1? --------------#\n\n")
+hist(df$DQI_score)
+# check normality using Kolmogorov-Smirnov test
+ks.test(df$DQI_score, "pnorm", mean(df$DQI_score), sd(df$DQI_score))
+
 # calculate the mean DQI score for each group
 mean_0 <- mean(df$DQI_score[df$screen_time == 0])
 mean_1 <- mean(df$DQI_score[df$screen_time == 1])
 
 # print the mean DQI score for each group
-cat("\n\n#----------------- Hypothesis Testing -------------------#\n\n")
 cat("Mean DQI score for screen_time = 0:", mean_0, "\n")
 cat("Mean DQI score for screen_time = 1:", mean_1, "\n\n")
 
-# conduct ANOVA test and save the results to a local file
-fit <- aov(DQI_score ~ screen_time, data = df)
-summary(fit)
+# conduct Mann-Whitney U test and save the results to a local file
+wilcox.test(df$DQI_score[df$screen_time == 0], df$DQI_score[df$screen_time == 1], alternative = "two.sided")
 
+
+cat("\n\n#------------ Any DQI_score differences between sex=0,1? --------------#\n\n")
+# calculate the mean DQI score for each group
+mean_0 <- mean(df$DQI_score[df$sex_f31_0_0 == 0])
+mean_1 <- mean(df$DQI_score[df$sex_f31_0_0 == 1])
+
+# print the mean DQI score for each group
+cat("Mean DQI score for sex_f31_0_0 = 0:", mean_0, "\n")
+cat("Mean DQI score for sex_f31_0_0 = 1:", mean_1, "\n\n")
+
+# conduct Mann-Whitney U test and save the results to a local file
+wilcox.test(df$DQI_score[df$sex_f31_0_0 == 0], df$DQI_score[df$sex_f31_0_0 == 1], alternative = "two.sided")
 
 
 #----------------- Linear Regression -------------------#
 # fit a multivariable linear regression model
-# model <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 +
-#               ipaq_activity_group_f22032_0_0 + total_met_minites_per_day, data = df)
 model <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
               total_met_minites_per_day, data = df)
 
@@ -102,25 +117,6 @@ cat("\n\n#----------------- Linear Regression -------------------#\n\n")
 cat("Analysis Results\n")
 summary(model)
 sink()
-
-# # use stratification on ipaq_activity_group_f22032_0_0
-# # ---> results hard to explain. abandoned
-# group1 <- df[df$ipaq_activity_group_f22032_0_0 == "low", ]
-# group2 <- df[df$ipaq_activity_group_f22032_0_0 == "moderate", ]
-# group3 <- df[df$ipaq_activity_group_f22032_0_0 == "high", ]
-# model1 <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0, data = group1)
-# model2 <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0, data = group2)
-# model3 <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0, data = group3)
-# # display the regression summary
-# sink("LR_strat_by_ipaq_activity_group_results.txt")
-# cat("Analysis Results\n")
-# cat("Result for ipaq_activity_group_f22032_0_0: low\n")
-# summary(model1)
-# cat("Result for ipaq_activity_group_f22032_0_0: moderate\n")
-# summary(model2)
-# cat("Result for ipaq_activity_group_f22032_0_0: high\n")
-# summary(model3)
-# sink()
 
 
 
