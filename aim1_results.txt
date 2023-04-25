@@ -1,16 +1,25 @@
 Group 0: screen time < 4hr per day 
 Group 1: screen time > 4hr per day 
-                               group1    n   mean     sd
-age_at_recruitment_f21022_0_01      0 2604  67.37   1.19
-age_at_recruitment_f21022_0_02      1 3528  67.40   1.19
-total_met_minites_per_day1          0 2604 427.87 369.26
-total_met_minites_per_day2          1 3528 369.68 343.78
-DQI_score1                          0 2604  76.72  11.35
-DQI_score2                          1 3528  75.87  11.13
-total_screen_hours_per_day1         0 2604   2.24   0.88
-total_screen_hours_per_day2         1 3528   5.36   1.57
-Group 0: Percentage of females:  52.65 % 
-Group 1: Percentage of females:  41.78 % 
+                               group1    n
+age_at_recruitment_f21022_0_01      0 3918
+age_at_recruitment_f21022_0_02      1 5295
+total_met_minites_per_day1          0 3918
+total_met_minites_per_day2          1 5295
+DQI_score1                          0 3918
+DQI_score2                          1 5295
+total_screen_hours_per_day1         0 3918
+total_screen_hours_per_day2         1 5295
+                                 mean     sd
+age_at_recruitment_f21022_0_01  67.40   1.19
+age_at_recruitment_f21022_0_02  67.41   1.20
+total_met_minites_per_day1     435.30 380.59
+total_met_minites_per_day2     379.74 354.88
+DQI_score1                      76.83  11.52
+DQI_score2                      76.06  11.00
+total_screen_hours_per_day1      2.24   0.88
+total_screen_hours_per_day2      5.35   1.57
+Group 0: Percentage of females:  52.58 % 
+Group 1: Percentage of females:  40.4 % 
 
 
 #----------------- Hypothesis Testing -------------------#
@@ -20,34 +29,37 @@ Group 1: Percentage of females:  41.78 %
 #------------ Any DQI_score differences between screen_time=0,1? --------------#
 
 
-	One-sample Kolmogorov-Smirnov test
+	Asymptotic one-sample Kolmogorov-Smirnov
+	test
 
 data:  df$DQI_score
-D = 0.10881, p-value < 2.2e-16
+D = 0.11079, p-value < 2.2e-16
 alternative hypothesis: two-sided
 
-Mean DQI score for screen_time = 0: 76.72366 
-Mean DQI score for screen_time = 1: 75.86696 
+Mean DQI score for screen_time = 0: 76.82925 
+Mean DQI score for screen_time = 1: 76.05687 
 
 
-	Wilcoxon rank sum test with continuity correction
+	Wilcoxon rank sum test with continuity
+	correction
 
 data:  df$DQI_score[df$screen_time == 0] and df$DQI_score[df$screen_time == 1]
-W = 4810446, p-value = 0.001435
+W = 10866074, p-value = 8.367e-05
 alternative hypothesis: true location shift is not equal to 0
 
 
 
 #------------ Any DQI_score differences between sex=0,1? --------------#
 
-Mean DQI score for sex_f31_0_0 = 0: 76.30425 
-Mean DQI score for sex_f31_0_0 = 1: 76.16716 
+Mean DQI score for sex_f31_0_0 = 0: 76.40837 
+Mean DQI score for sex_f31_0_0 = 1: 76.36605 
 
 
-	Wilcoxon rank sum test with continuity correction
+	Wilcoxon rank sum test with continuity
+	correction
 
 data:  df$DQI_score[df$sex_f31_0_0 == 0] and df$DQI_score[df$sex_f31_0_0 == 1]
-W = 4757342, p-value = 0.2349
+W = 10676265, p-value = 0.2369
 alternative hypothesis: true location shift is not equal to 0
 
 
@@ -62,19 +74,38 @@ lm(formula = DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--48.363  -6.809   0.878   8.279  25.128 
+-49.373  -6.755   0.772   8.493  24.951 
 
 Coefficients:
-                                Estimate Std. Error t value Pr(>|t|)    
-(Intercept)                   64.9364499  8.1184927   7.999 1.49e-15 ***
-screen_time                   -0.6832773  0.2914681  -2.344   0.0191 *  
-sex_f31_0_01                  -0.0449587  0.2879556  -0.156   0.8759    
-age_at_recruitment_f21022_0_0  0.1564922  0.1203616   1.300   0.1936    
-total_met_minites_per_day      0.0029568  0.0004024   7.347 2.29e-13 ***
+                                Estimate
+(Intercept)                   62.7511748
+screen_time                   -0.6221310
+sex_f31_0_01                   0.0098880
+age_at_recruitment_f21022_0_0  0.1909544
+total_met_minites_per_day      0.0027642
+                              Std. Error
+(Intercept)                    6.5868823
+screen_time                    0.2379260
+sex_f31_0_01                   0.2355285
+age_at_recruitment_f21022_0_0  0.0976593
+total_met_minites_per_day      0.0003182
+                              t value Pr(>|t|)
+(Intercept)                     9.527  < 2e-16
+screen_time                    -2.615  0.00894
+sex_f31_0_01                    0.042  0.96651
+age_at_recruitment_f21022_0_0   1.955  0.05058
+total_met_minites_per_day       8.688  < 2e-16
+                                 
+(Intercept)                   ***
+screen_time                   ** 
+sex_f31_0_01                     
+age_at_recruitment_f21022_0_0 .  
+total_met_minites_per_day     ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  
+0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
 
-Residual standard error: 11.18 on 6127 degrees of freedom
-Multiple R-squared:  0.01038,	Adjusted R-squared:  0.009734 
-F-statistic: 16.07 on 4 and 6127 DF,  p-value: 4.299e-13
+Residual standard error: 11.17 on 9208 degrees of freedom
+Multiple R-squared:  0.009691,	Adjusted R-squared:  0.009261 
+F-statistic: 22.53 on 4 and 9208 DF,  p-value: < 2.2e-16
 

@@ -1,16 +1,56 @@
 # setwd("C:/Users/Xinyi/OneDrive - Yale University/Yale/BIS 687/BIS687-Capstone_Project_Team5")
 library(dplyr)
-# import diet data
+
+
+#----------------- Descriptive Statistics -------------------#
+# import realted covariates
 physical <- read.csv("physical.csv")
-physical <- physical[, -1]
+# remove useless columns X, redundant alcohol,ethic, leisure social activity, types of transport
+physical <- physical[, -c(1,13,14,18,20)]
+# change data type
+physical$sex_f31_0_0 <- factor(physical$sex_f31_0_0,
+                               levels = c("Female", "Male"),
+                               labels = c(0,1))
+
+physical$ipaq_activity_group_f22032_0_0 <- ifelse(physical$ipaq_activity_group_f22032_0_0=="low",1,
+                                           ifelse(physical$ipaq_activity_group_f22032_0_0=="moderate",2,3))
+
+physical$alcohol_intake_frequency_f1558_0_0 <- ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Never",0,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Special occasions only",1,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="One to three times a month",2,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Once or twice a week",3,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Three or four times a week",4,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Daily or almost daily",5,6))))))
+
+physical$frequency_of_friendfamily_visits_f1031_0_0 <- ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Never or almost never"|
+                                                                physical$frequency_of_friendfamily_visits_f1031_0_0=="No friends/family outside household",0,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Once every few months",1,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="About once a month",2,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="About once a week",3,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="2-4 times a week",4,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Almost daily",5,6))))))
+
+physical$smoking_status_f20116_0_0 <- ifelse(physical$smoking_status_f20116_0_0=="Never",0,
+                                      ifelse(physical$smoking_status_f20116_0_0=="Previous",1,
+                                      ifelse(physical$smoking_status_f20116_0_0=="Current",2,NA)))
+physical$smoking_status_f20116_0_0 <- as.factor(physical$smoking_status_f20116_0_0)
+
+# negatives in sleep duration
 physical <- physical %>% 
-  mutate(across(everything(), ~ifelse(.<0, 0, .)))
+  mutate_at("sleep_duration_f1160_0_0", ~ifelse(.<0, NA, .))
+
+# negatives in screen time
+physical <- physical %>% 
+  mutate_at(c("time_spent_watching_television_tv_f1070_0_0", 
+              "time_spent_using_computer_f1080_0_0"), 
+            ~ifelse(.<0, 0, .))
 physical$screen_time <- physical$time_spent_using_computer_f1080_0_0 + physical$time_spent_watching_television_tv_f1070_0_0
 physical$screen_time <- ifelse(physical$screen_time>=4, 1, 0)
 
+# import diet data
 ukbiobank <- readRDS("ukbiobank.rds")
-DQI_score <- read.csv("DQI_score.csv")
-DQI_score <- DQI_score[,-1]
+DQI_score <- read.csv("DQI_score.csv",skip = 1)
+DQI_score <- DQI_score[1:11270,-1]
 age <- ukbiobank[, c("eid", "age_at_recruitment_f21022_0_0")]
 
 df <- merge(physical, age, by = "eid")
@@ -18,13 +58,11 @@ df <- merge(df, DQI_score, by = "eid")
 df$total_screen_hours_per_day <- df$time_spent_watching_television_tv_f1070_0_0 + df$time_spent_using_computer_f1080_0_0
 # df <- df %>% mutate(across(everything(), ~ ifelse(. < 0, 0, .)))
 df$DQI_score <- as.numeric(df$DQI_score)
-df$ipaq_activity_group_f22032_0_0 <- factor(df$ipaq_activity_group_f22032_0_0,
-                                            levels = c("low","moderate","high"),
-                                            labels = c(1,2,3))
-df$sex_f31_0_0 <- factor(df$sex_f31_0_0,
-                         levels = c("Female", "Male"),
-                         labels = c(0,1))
+
+
 df <- na.omit(df)
+
+
 
 #----------------- Descriptive Statistics -------------------#
 cat("\n\n#----------------- Descriptive Statistics -------------------#\n\n")
