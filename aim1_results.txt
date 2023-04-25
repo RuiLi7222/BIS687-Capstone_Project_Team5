@@ -1,16 +1,32 @@
 Group 0: screen time < 4hr per day 
 Group 1: screen time > 4hr per day 
-                               group1    n   mean     sd
-age_at_recruitment_f21022_0_01      0 3918  67.40   1.19
-age_at_recruitment_f21022_0_02      1 5295  67.41   1.20
-total_met_minites_per_day1          0 3918 435.30 380.59
-total_met_minites_per_day2          1 5295 379.74 354.88
-DQI_score1                          0 3918  76.83  11.52
-DQI_score2                          1 5295  76.06  11.00
-total_screen_hours_per_day1         0 3918   2.24   0.88
-total_screen_hours_per_day2         1 5295   5.35   1.57
+                                            group1    n   mean     sd
+age_at_recruitment_f21022_0_01                   0 3918  67.40   1.19
+age_at_recruitment_f21022_0_02                   1 5295  67.41   1.20
+total_met_minites_per_day1                       0 3918 435.30 380.59
+total_met_minites_per_day2                       1 5295 379.74 354.88
+DQI_score1                                       0 3918  76.83  11.52
+DQI_score2                                       1 5295  76.06  11.00
+total_screen_hours_per_day1                      0 3918   2.24   0.88
+total_screen_hours_per_day2                      1 5295   5.35   1.57
+sleep_duration_f1160_0_01                        0 3918   7.31   0.99
+sleep_duration_f1160_0_02                        1 5295   7.33   1.06
+alcohol_intake_frequency_f1558_0_01              0 3918   3.40   1.55
+alcohol_intake_frequency_f1558_0_02              1 5295   3.35   1.53
+standing_height_f50_0_01                         0 3918 168.15   9.02
+standing_height_f50_0_02                         1 5295 169.38   8.93
+weight_f21002_0_01                               0 3918  73.28  13.03
+weight_f21002_0_02                               1 5295  78.93  13.96
+frequency_of_friendfamily_visits_f1031_0_01      0 3918   3.39   1.06
+frequency_of_friendfamily_visits_f1031_0_02      1 5295   3.33   1.11
 Group 0: Percentage of females:  52.58 % 
 Group 1: Percentage of females:  40.4 % 
+Group 0: Percentage of never smoke:  56.28 % 
+Group 1: Percentage of never smoke:  45.29 % 
+Group 0: Percentage of previous smoke:  39.79 % 
+Group 1: Percentage of previous smoke:  49.18 % 
+Group 0: Percentage of current smoke:  3.93 % 
+Group 1: Percentage of current smoke:  5.53 % 
 
 
 #----------------- Hypothesis Testing -------------------#
@@ -20,7 +36,7 @@ Group 1: Percentage of females:  40.4 %
 #------------ Any DQI_score differences between screen_time=0,1? --------------#
 
 
-	Asymptotic one-sample Kolmogorov-Smirnov test
+	One-sample Kolmogorov-Smirnov test
 
 data:  df$DQI_score
 D = 0.11079, p-value < 2.2e-16
@@ -52,36 +68,67 @@ alternative hypothesis: true location shift is not equal to 0
 
 
 
+#------------ Any DQI_score differences between smoking status=0,1,2? --------------#
+
+Mean DQI score for smoking_status_f20116_0_0 = 0: 76.59395 
+Mean DQI score for smoking_status_f20116_0_0 = 1: 76.4006 
+Mean DQI score for smoking_status_f20116_0_0 = 1: 74.09501 
+
+
+	Wilcoxon rank sum test with continuity correction
+
+data:  df$DQI_score[df$smoking_status_f20116_0_0 == 0] and df$DQI_score[df$smoking_status_f20116_0_0 == 1]
+W = 9768364, p-value = 0.1112
+alternative hypothesis: true location shift is not equal to 0
+
+
+	Wilcoxon rank sum test with continuity correction
+
+data:  df$DQI_score[df$smoking_status_f20116_0_0 == 0] and df$DQI_score[df$smoking_status_f20116_0_0 == 2]
+W = 1176564, p-value = 4.286e-07
+alternative hypothesis: true location shift is not equal to 0
+
+
+	Wilcoxon rank sum test with continuity correction
+
+data:  df$DQI_score[df$smoking_status_f20116_0_0 == 1] and df$DQI_score[df$smoking_status_f20116_0_0 == 2]
+W = 1047854, p-value = 9.868e-06
+alternative hypothesis: true location shift is not equal to 0
+
+
+
 #----------------- Linear Regression -------------------#
 
 Analysis Results
 
 Call:
 lm(formula = DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
-    total_met_minites_per_day, data = df)
+    total_met_minites_per_day + sleep_duration_f1160_0_0 + alcohol_intake_frequency_f1558_0_0 + 
+    standing_height_f50_0_0 + weight_f21002_0_0 + frequency_of_friendfamily_visits_f1031_0_0 + 
+    smoking_status_f20116_0_0, data = df)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--49.373  -6.755   0.772   8.493  24.951 
+-48.051  -6.720   0.864   7.950  26.413 
 
 Coefficients:
-                                Estimate Std. Error t value
-(Intercept)                   62.7511748  6.5868823   9.527
-screen_time                   -0.6221310  0.2379260  -2.615
-sex_f31_0_01                   0.0098880  0.2355285   0.042
-age_at_recruitment_f21022_0_0  0.1909544  0.0976593   1.955
-total_met_minites_per_day      0.0027642  0.0003182   8.688
-                              Pr(>|t|)    
-(Intercept)                    < 2e-16 ***
-screen_time                    0.00894 ** 
-sex_f31_0_01                   0.96651    
-age_at_recruitment_f21022_0_0  0.05058 .  
-total_met_minites_per_day      < 2e-16 ***
+                                             Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                                40.8790498  7.3283897   5.578 2.50e-08 ***
+screen_time                                -0.5849107  0.2408438  -2.429   0.0152 *  
+sex_f31_0_01                               -1.7437003  0.3438344  -5.071 4.03e-07 ***
+age_at_recruitment_f21022_0_0               0.2169942  0.0969277   2.239   0.0252 *  
+total_met_minites_per_day                   0.0028635  0.0003178   9.011  < 2e-16 ***
+sleep_duration_f1160_0_0                    0.0367740  0.1121211   0.328   0.7429    
+alcohol_intake_frequency_f1558_0_0          0.6080604  0.0782132   7.774 8.40e-15 ***
+standing_height_f50_0_0                     0.0826295  0.0200934   4.112 3.95e-05 ***
+weight_f21002_0_0                           0.0425054  0.0107273   3.962 7.48e-05 ***
+frequency_of_friendfamily_visits_f1031_0_0  0.5623650  0.1072745   5.242 1.62e-07 ***
+smoking_status_f20116_0_01                 -0.5895703  0.2450512  -2.406   0.0162 *  
+smoking_status_f20116_0_02                 -2.7944989  0.5531912  -5.052 4.47e-07 ***
 ---
-Signif. codes:  
-0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 11.17 on 9208 degrees of freedom
-Multiple R-squared:  0.009691,	Adjusted R-squared:  0.009261 
-F-statistic: 22.53 on 4 and 9208 DF,  p-value: < 2.2e-16
+Residual standard error: 11.08 on 9201 degrees of freedom
+Multiple R-squared:  0.02714,	Adjusted R-squared:  0.02597 
+F-statistic: 23.33 on 11 and 9201 DF,  p-value: < 2.2e-16
 
