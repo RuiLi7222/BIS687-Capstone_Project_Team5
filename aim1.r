@@ -159,19 +159,37 @@ sink()
 
 
 ############## Mediation Analysis #############
+# choose best predictors
+dt <- df[,-c(1,2,4:8,20)]
+y1 <- lm(DQI_score~.,data=dt)
+summary(y1)
+library(leaps)
+Best_Subset <-
+  regsubsets(DQI_score~.,
+             data=dt,
+             nbest = 1,      # 1 best model for each number of predictors
+             nvmax = NULL,    # NULL for no limit on number of variables
+             force.in = NULL, force.out = NULL,
+             method = "exhaustive")
+summary_best_subset <- summary(Best_Subset)
+# as.data.frame(summary_best_subset$outmat)
+which.max(summary_best_subset$adjr2)
+summary_best_subset$which[11,]
+# include all the predictors in the dataset
+
+
 #Mediate package
 library(mediation)
-fitM <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0, 
-           data = df)
-fitY <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
-             total_met_minites_per_day, data = df)
+fitM <- lm(DQI_score ~ .-total_met_minites_per_day, 
+           data = dt)
+fitY <- lm(DQI_score ~ ., data = dt)
 
 anova(fitM, fitY)
 
 # Estimation via quasi-Bayesian approximation
 contcont <- mediate(fitM, fitY, sims=50, 
                     treat="screen_time", 
-                    mediator="total_met_minites_per_day")
+                    mediator=c("total_met_minites_per_day"))
 summary(contcont)
 plot(contcont)
 
@@ -182,9 +200,11 @@ contcont.boot <- mediate(fitM, fitY, boot=TRUE, sims=50,
 summary(contcont.boot)
 
 # Allowing treatment-mediator interaction
-fitD <- lm(DQI_score ~ screen_time + sex_f31_0_0 + age_at_recruitment_f21022_0_0 + 
-             total_met_minites_per_day + screen_time:total_screen_hours_per_day, 
-           data=df)
+form <- as.formula(paste("DQI_score ~screen_time*total_met_minites_per_day+",
+                         paste(names(dt)[-c(9,10,12)], collapse = "+")))
+
+fitD <- lm(form, 
+           data=dt)
 anova(fitY, fitD)
 
 contcont.int <- mediate(fitM, fitD, sims=50, 
