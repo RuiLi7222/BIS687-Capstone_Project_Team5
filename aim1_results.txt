@@ -126,7 +126,7 @@ frequency_of_friendfamily_visits_f1031_0_0  0.5623650  0.1072745   5.242 1.62e-0
 smoking_status_f20116_0_01                 -0.5895703  0.2450512  -2.406   0.0162 *  
 smoking_status_f20116_0_02                 -2.7944989  0.5531912  -5.052 4.47e-07 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 ?**?0.001 ?*?0.01 ??0.05 ??0.1 ??1
 
 Residual standard error: 11.08 on 9201 degrees of freedom
 Multiple R-squared:  0.02714,	Adjusted R-squared:  0.02597 
