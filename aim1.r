@@ -2,7 +2,7 @@
 library(dplyr)
 
 
-#----------------- Data Cleaning -------------------#
+#----------------- Descriptive Statistics -------------------#
 # import realted covariates
 physical <- read.csv("physical.csv")
 # remove useless columns X, redundant alcohol,ethic, leisure social activity, types of transport
@@ -13,26 +13,26 @@ physical$sex_f31_0_0 <- factor(physical$sex_f31_0_0,
                                labels = c(0,1))
 
 physical$ipaq_activity_group_f22032_0_0 <- ifelse(physical$ipaq_activity_group_f22032_0_0=="low",1,
-                                                  ifelse(physical$ipaq_activity_group_f22032_0_0=="moderate",2,3))
+                                           ifelse(physical$ipaq_activity_group_f22032_0_0=="moderate",2,3))
 
 physical$alcohol_intake_frequency_f1558_0_0 <- ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Never",0,
-                                                      ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Special occasions only",1,
-                                                             ifelse(physical$alcohol_intake_frequency_f1558_0_0=="One to three times a month",2,
-                                                                    ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Once or twice a week",3,
-                                                                           ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Three or four times a week",4,
-                                                                                  ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Daily or almost daily",5,6))))))
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Special occasions only",1,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="One to three times a month",2,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Once or twice a week",3,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Three or four times a week",4,
+                                               ifelse(physical$alcohol_intake_frequency_f1558_0_0=="Daily or almost daily",5,6))))))
 
 physical$frequency_of_friendfamily_visits_f1031_0_0 <- ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Never or almost never"|
                                                                 physical$frequency_of_friendfamily_visits_f1031_0_0=="No friends/family outside household",0,
-                                                              ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Once every few months",1,
-                                                                     ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="About once a month",2,
-                                                                            ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="About once a week",3,
-                                                                                   ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="2-4 times a week",4,
-                                                                                          ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Almost daily",5,6))))))
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Once every few months",1,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="About once a month",2,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="About once a week",3,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="2-4 times a week",4,
+                                                       ifelse(physical$frequency_of_friendfamily_visits_f1031_0_0=="Almost daily",5,6))))))
 
 physical$smoking_status_f20116_0_0 <- ifelse(physical$smoking_status_f20116_0_0=="Never",0,
-                                             ifelse(physical$smoking_status_f20116_0_0=="Previous",1,
-                                                    ifelse(physical$smoking_status_f20116_0_0=="Current",2,NA)))
+                                      ifelse(physical$smoking_status_f20116_0_0=="Previous",1,
+                                      ifelse(physical$smoking_status_f20116_0_0=="Current",2,NA)))
 physical$smoking_status_f20116_0_0 <- as.factor(physical$smoking_status_f20116_0_0)
 
 # negatives in sleep duration
@@ -49,8 +49,8 @@ physical$screen_time <- ifelse(physical$screen_time>=4, 1, 0)
 
 # import diet data
 ukbiobank <- readRDS("ukbiobank.rds")
-DQI_score <- read.csv("DQI_score.csv")
-DQI_score <- DQI_score[,-1]
+DQI_score <- read.csv("DQI_score.csv",skip = 1)
+DQI_score <- DQI_score[1:11270,-1]
 age <- ukbiobank[, c("eid", "age_at_recruitment_f21022_0_0")]
 
 df <- merge(physical, age, by = "eid")
@@ -217,15 +217,15 @@ fitY <- lm(DQI_score ~ ., data = dt)
 
 # Estimation via quasi-Bayesian approximation
 contcont <- mediation::mediate(fitM, fitY, data = dt,sims=50, 
-                               treat="screen_time", 
-                               mediator="total_met_minites_per_day")
+                    treat="screen_time", 
+                    mediator="total_met_minites_per_day")
 summary(contcont)
 plot(contcont)
 
 # Estimation via nonparametric bootstrap
 contcont.boot <- mediation::mediate(fitM, fitY, boot=TRUE, sims=50, 
-                                    treat="screen_time", 
-                                    mediator="total_met_minites_per_day")
+                         treat="screen_time", 
+                         mediator="total_met_minites_per_day")
 summary(contcont.boot)
 
 # Allowing treatment-mediator interaction
@@ -245,14 +245,14 @@ d.int <- lm(DQI_score ~ screen_time*sex_f31_0_0*total_met_minites_per_day+.,
             data = dt)
 
 contcont.female <- mediation::mediate(b.int, d.int, sims=50, 
-                                      treat="screen_time", 
-                                      mediator="total_met_minites_per_day",
-                                      covariates = list(sex_f31_0_0 = 0))
+                           treat="screen_time", 
+                           mediator="total_met_minites_per_day",
+                           covariates = list(sex_f31_0_0 = 0))
 
 contcont.male <- mediation::mediate(b.int, d.int, sims=50, 
-                                    treat="screen_time", 
-                                    mediator="total_met_minites_per_day",
-                                    covariates = list(sex_f31_0_0 = 1))
+                         treat="screen_time", 
+                         mediator="total_met_minites_per_day",
+                         covariates = list(sex_f31_0_0 = 1))
 
 summary(contcont.female)
 summary(contcont.male)
@@ -282,6 +282,10 @@ contcont.currentsmoking <- mediation::mediate(e.int, f.int, sims=50,
 summary(contcont.nosmoking)
 summary(contcont.previoussmoking)
 summary(contcont.currentsmoking)
+
+
+
+
 
 
 
