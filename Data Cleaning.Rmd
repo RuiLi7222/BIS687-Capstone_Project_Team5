@@ -1,0 +1,72 @@
+---
+title: "Data Cleaning"
+author: "Rui Li"
+date: "4/21/2023"
+output: pdf_document
+---
+
+**Required Packages**
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(readr)
+```
+
+## Clean Dataset
+```{r message=FALSE, warning=FALSE}
+#import data sets
+data = readRDS("ukbiobank/ukbiobank.rds")%>%
+    rename(eid_0_0 = eid)
+var_df = read_csv("ukbiobank/variable_table.csv",show_col_types = FALSE)
+unit_df = read_csv("ukbiobank/Data_Dictionary_Showcase.csv", show_col_types = FALSE)
+#define data cohort
+data_old=data[data$age_at_recruitment_f21022_0_0 > 65,]
+```
+
+## Prepare for the Diet Data
+```{r}
+#extract the nutrient and screen time variables 
+nutrition_cols = var_df$variable[var_df$category=="Nutrition"]
+inactivity_cols = var_df$variable[var_df$category=="Inactivity"]
+
+df_diet = data_old[,c("eid_0_0","overall_health_rating_f2178_0_0","sex_f31_0_0",
+                      nutrition_cols,inactivity_cols)]%>%
+   select(matches("0_0")) %>%
+   select(-matches("driving")) %>%
+   rename(eid = eid_0_0)
+```
+
+
+```{r}
+other_features = c("sleep_duration_f1160_0_0", "alcohol_intake_frequency_f1558_0_0", "frequency_of_drinking_alcohol_f20414_0_0", "ethnic_background_f21000_0_0", "standing_height_f50_0_0", "weight_f21002_0_0",  "frequency_of_friendfamily_visits_f1031_0_0", "leisuresocial_activities_f6160_0_0", "frequency_of_friendfamily_visits_pilot_f10740_0_0", "smoking_status_f20116_0_0", "types_of_transport_used_excluding_work_f6162_0_0")
+```
+
+## Prepare for the Physical Data
+```{r}
+#extract the physical activity variables
+physical_cols = var_df$variable[var_df$category=="Physical Activity"]
+
+#select mediators
+met_id = grep("met", physical_cols)
+ipaq = grep("ipaq", physical_cols)
+physical_sels = physical_cols[c(met_id, ipaq)]
+
+df_phy = data_old[,c("eid_0_0","overall_health_rating_f2178_0_0","sex_f31_0_0",
+                     inactivity_cols,physical_sels,other_features)]%>%
+   select(matches("0_0")) %>%
+   select(-matches("driving")) %>%
+   rename(eid = eid_0_0)%>%
+   mutate(across(physical_cols[met_id], function(x) x/7))%>% 
+   mutate(total_met_minites_per_day = rowSums(across(physical_cols[met_id])))%>%
+   rename_with(stringr::str_replace, 
+              pattern = "week", replacement = "day", 
+              matches("week"))%>%
+   mutate(screen_time = 1*(time_spent_watching_television_tv_f1070_0_0+time_spent_using_computer_f1080_0_0>=4))%>%
+   select(where(~mean(is.na(.)) < 0.5))
+```
+
+
+## Export data
+```{r}
+#write.csv(df,"diet.csv")
+write.csv(df_phy, "physical.csv")
+```

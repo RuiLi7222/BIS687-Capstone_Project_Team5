@@ -1,0 +1,126 @@
+---
+title: "Exploratory Data Analysis"
+author: "Rui Li"
+date: "2/12/2023"
+output: pdf_document
+---
+
+**Required Packages**
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(readr)
+```
+
+## Clean Dataset
+```{r}
+#import datasets
+data = readRDS("ukbiobank/ukbiobank.rds")
+var_df = read_csv("ukbiobank/variable_table.csv")
+unit_df = read_csv("ukbiobank/Data_Dictionary_Showcase.csv")
+
+# #drop columns with more than 80% missing values
+# threshold <- 0.8 #for a 80% cut-off
+# df = data %>% 
+#   select(where(~mean(is.na(.)) < threshold))%>% 
+#   select(matches("0_0"))%>%
+#   select(-matches("id|method|acceleration|data_quality|unique_hours_of_wear|invitation_to_physical_activity_study"))%>%
+#   filter(!overall_health_rating_f2178_0_0%in%c("Prefer not to answer","Do not know"))%>%
+#   filter_at(vars(overall_health_rating_f2178_0_0),all_vars(!is.na(.)))
+# df$overall_health_rating_f2178_0_0=sapply(df$overall_health_rating_f2178_0_0,unclass)
+```
+```{r}
+colnames(data)[which(names(data) == "eid")] <- "eid_0_0"
+```
+
+
+```{r}
+nutrition_cols = var_df$variable[var_df$category=="Nutrition"]
+inactivity_cols = var_df$variable[var_df$category=="Inactivity"]
+data_old=data[data$age_at_recruitment_f21022_0_0 > 65,]
+df = data_old[,c("eid_0_0","overall_health_rating_f2178_0_0","sex_f31_0_0", nutrition_cols,inactivity_cols)]%>%
+   select(matches("0_0")) %>%
+   select(-matches("driving")) #%>%
+   #select(where(~mean(is.na(.)) < 0.5))
+#df = na.omit(df)
+#df$overall_health_rating_f2178_0_0=as.numeric(df$overall_health_rating_f2178_0_0)
+```
+
+```{r}
+colnames(df)[which(names(df) == "eid_0_0")] <- "eid"
+```
+
+
+```{r}
+write.csv(df,"diet.csv")
+```
+
+
+```{r}
+m1=lm(overall_health_rating_f2178_0_0~cooked_vegetable_intake_f1289_0_0+fresh_fruit_intake_f1309_0_0+tea_intake_f1488_0_0+salad_raw_vegetable_intake_f1299_0_0+bread_intake_f1438_0_0+cereal_intake_f1458_0_0,data=df)
+summary(m1)
+```
+```{r}
+# m1=lm(overall_health_rating_f2178_0_0~cooked_vegetable_intake_f1289_0_0+fresh_fruit_intake_f1309_0_0+tea_intake_f1488_0_0+salad_raw_vegetable_intake_f1299_0_0+bread_intake_f1438_0_0+cereal_intake_f1458_0_0,data=df)
+# summary(m1)Processed meat intake
+m1=lm(fresh_fruit_intake_f1309_0_0~time_spent_watching_television_tv_f1070_0_0+time_spent_using_computer_f1080_0_0,data=df)
+summary(m1)
+
+m1=lm(as.numeric(processed_meat_intake_f1349_0_0)~time_spent_watching_television_tv_f1070_0_0+time_spent_using_computer_f1080_0_0,data=df)
+summary(m1)
+```
+
+
+```{r}
+nutrition_cols = var_df$variable[var_df$category=="Nutrition"]
+threshold <- 0.5 #for a 50% cut-off
+df_diet = data_old[,nutrition_cols] %>%
+   select(matches("0_0")) %>%
+   select(where(~mean(is.na(.)) < threshold))
+```
+
+
+```{r}
+inactivity_cols = var_df$variable[var_df$category=="Inactivity"]
+threshold <- 0.1 #for a 10% cut-off
+df_X = data_old[,inactivity_cols] %>%
+   select(matches("0_0")) %>%
+   select(-matches("driving")) %>%
+   select(where(~mean(is.na(.)) < threshold))
+```
+
+
+```{r}
+nutrition_ids = unique(var_df$fieldid[var_df$category=="Nutrition"])
+inactivity_ids = unique(var_df$fieldid[var_df$category=="Inactivity"])
+```
+
+```{r}
+units=unit_df[unit_df$FieldID%in%c(nutrition_ids,inactivity_ids),c('Field','ValueType','Units')]
+```
+
+```{r}
+summary(df_diet)
+```
+```{r}
+library(ggplot2)
+names(df_X) = c("Time Spent on Television", "Time Spent on Computer")
+m1 = median(df_X$`Time Spent on Television`,na.rm=TRUE)
+ggplot(df_X, aes(x=`Time Spent on Television`)) +
+  geom_histogram(binwidth = 1,fill="blue",alpha=0.4)+
+  geom_vline(aes(xintercept = m1),col='red',size=0.5)+
+  geom_text(x=5, y=2000, label="Median = 3")+
+  ggtitle("The Histrogram of Time Spent on Television")+
+  ylab("Count")+
+  theme(plot.title = element_text(hjust = 0.5, face="bold"))
+```
+```{r}
+m2 = median(df_X$`Time Spent on Computer`,na.rm=TRUE)
+ggplot(df_X, aes(x=`Time Spent on Computer`)) +
+  geom_histogram(binwidth = 1,fill="blue",alpha=0.4)+
+  geom_vline(aes(xintercept = m2),col='red',size=0.5)+
+  geom_text(x=5, y=2000, label="Median = 1")+
+  ggtitle("The Histrogram of Time Spent on Computer")+
+  ylab("Count")+
+  theme(plot.title = element_text(hjust = 0.5, face="bold"))
+```
+
